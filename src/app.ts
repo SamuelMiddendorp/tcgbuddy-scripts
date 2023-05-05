@@ -1,13 +1,18 @@
-interface Foo{
-    bar: string
+import { MongoClient } from "mongodb";
+
+let url = "mongodb://127.0.0.1:27017/TCGBUDDY"
+let mongoClient = new MongoClient(url);
+let db = mongoClient.db();
+
+let collection = db.collection("Cards")
+
+const logConnection = async () => {
+    const results = collection.find().limit(100);
+    const res = await results.toArray();
+    console.log(res);
+    mongoClient.close();
+    return;
 }
+logConnection().then(x => console.log("Succes!"))
 
-const sayBar = (foobar: Foo) => {
-    console.log(foobar.bar);
-}
-
-let fooBar = {bar: "bas"};
-
-console.log(process .env.npm_config_port);
-sayBar(fooBar);
 
