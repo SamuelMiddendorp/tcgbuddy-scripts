@@ -22,3 +22,10 @@ export interface Images {
   small: string;
   large: string;
 }
+
+
+export interface PokemonSet{
+  id: string,
+  name: string,
+  total: number
+}
