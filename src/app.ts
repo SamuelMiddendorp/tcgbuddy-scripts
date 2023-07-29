@@ -16,10 +16,19 @@ const getAllSets = async () : Promise<PokemonSet[]> => {
     });
     return data.data;
 }
+const getSetCards = async (setId: string) : Promise<any> => {
+    const { data } = await axios.get<ApiResponse<any>>(`https://api.pokemontcg.io/v2/cards?set.id:${setId}`,{
+        headers:{
+            "X-Api-Key": userDefinedEnvs.API_KEY
+        }
+    });
+    return data.data;
+}
 const main = async () => {
 
     const sets = await getAllSets();
-    sets.forEach(set => console.log(`set: ${set.name} with id: ${set.id}`))
+    const cardData = await getSetCards(sets[0].id);
+    console.log(cardData);
 }
 
 main();
