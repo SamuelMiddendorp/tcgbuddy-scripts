@@ -1,5 +1,5 @@
 import axios from "axios";
-import { writeFileSync } from "fs";
+import { write, writeFileSync } from "fs";
 import { PokemonSet } from "./model/model";
 
 // Not sure why this is needed, has something to do with the .env not being in the same folder as app.ts
@@ -40,8 +40,12 @@ const getSetCards = async (setId: string): Promise<any> => {
 const main = async () => {
 
     const sets = await getAllSets();
-    const cardData = await getSetCards(sets[0].id);
-    writeFileSync(`${sets[0].name}.json`, JSON.stringify(cardData));
+
+    sets.forEach(async x => {
+
+        let cards = await getSetCards(x.id);
+        writeFileSync(`${x.name}.json`, JSON.stringify(cards));
+    })
 }
 
 main();
