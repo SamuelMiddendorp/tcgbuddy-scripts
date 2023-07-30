@@ -1,4 +1,5 @@
 import axios from "axios";
+import { writeFileSync } from "fs";
 import { PokemonSet } from "./model/model";
 
 // Not sure why this is needed, has something to do with the .env not being in the same folder as app.ts
@@ -19,14 +20,14 @@ const getAllSets = async (): Promise<PokemonSet[]> => {
 }
 const getSetCards = async (setId: string): Promise<any> => {
     let pokemon = [];
-    const { data } = await axios.get<ApiResponse<any>>(`https://api.pokemontcg.io/v2/cards?set.id:${setId}`, {
+    const { data } = await axios.get<ApiResponse<any>>(`https://api.pokemontcg.io/v2/cards?q=set.id:${setId}`, {
         headers: {
             "X-Api-Key": userDefinedEnvs.API_KEY
         }
     });
     pokemon = pokemon.concat(data.data);
     if (data.totalCount > 250) {
-        const { data } = await axios.get<ApiResponse<any>>(`https://api.pokemontcg.io/v2/cards?set.id:${setId}?page=2`, {
+        const { data } = await axios.get<ApiResponse<any>>(`https://api.pokemontcg.io/v2/cards?q=set.id:${setId}&page=2`, {
             headers: {
                 "X-Api-Key": userDefinedEnvs.API_KEY
             }
@@ -40,7 +41,7 @@ const main = async () => {
 
     const sets = await getAllSets();
     const cardData = await getSetCards(sets[0].id);
-    console.log(cardData);
+    writeFileSync(`${sets[0].name}.json`, JSON.stringify(cardData));
 }
 
 main();
