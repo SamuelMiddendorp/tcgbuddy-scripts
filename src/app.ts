@@ -22,14 +22,14 @@ const getAllSets = async (): Promise<PokemonSet[]> => {
 }
 const getSetCards = async (setId: string): Promise<any> => {
     let pokemon = [];
-    const { data } = await axios.get<ApiResponse<any>>(`https://api.pokemontcg.io/v2/cards?q=set.id:${setId}&page=1&pageSize=250`, {
+    const { data } = await axios.get<ApiResponse<any>>(`https://api.pokemontcg.io/v2/cards?q=set.id:${setId}&page=1&pageSize=250&orderBy=number`, {
         headers: {
             "X-Api-Key": userDefinedEnvs.API_KEY
         }
     });
     pokemon = pokemon.concat(data.data);
     if (data.totalCount > 250) {
-        const { data } = await axios.get<ApiResponse<any>>(`https://api.pokemontcg.io/v2/cards?q=set.id:${setId}&page=2&pageSize=250`, {
+        const { data } = await axios.get<ApiResponse<any>>(`https://api.pokemontcg.io/v2/cards?q=set.id:${setId}&page=2&pageSize=250&orderBy=number`, {
             headers: {
                 "X-Api-Key": userDefinedEnvs.API_KEY
             }
