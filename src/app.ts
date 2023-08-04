@@ -45,7 +45,7 @@ const main = async () => {
     writeFile("sets.json", JSON.stringify(sets), (x => x));
     for(var i = 0; i < sets.length; i++){
         let set = sets[i]
-        await timeout(300);
+        await timeout(100);
         console.log(`Reading and writing set: ${set.name}`)
         var cards = await getSetCards(set.id);
         writeFileSync(`foobar/${set.name}-${set.id}.json`, JSON.stringify(cards));
