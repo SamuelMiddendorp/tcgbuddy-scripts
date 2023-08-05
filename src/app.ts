@@ -13,7 +13,7 @@ interface ApiResponse<T> {
 const getAllSets = async (): Promise<PokemonSet[]> => {
 
     const res = await doAxiosRequest<ApiResponse<PokemonSet[]>>(
-        "https://api.pokemontcg.io/v2/sets"
+        "https://api.pokemontcg.io/v2/sets222"
     )
     return res.data;
 }
@@ -27,8 +27,9 @@ const doAxiosRequest = async <T,>(url: string): Promise<T> => {
         return res.data;
     }
     catch (error) {
-        // We simply log an error and continue executing (hopefully)
+        // We simply log an error and FAIL
         console.log(Object.keys(error), error.message);
+        throw new Error("Error doing request");
     }
 }
 const getSetCards = async (setId: string): Promise<any> => {
@@ -54,13 +55,13 @@ const main = async () => {
     const sets = await getAllSets();
     writeFile("sets.json", JSON.stringify(sets), (x => x));
     return;
-    for (var i = 0; i < sets.length; i++) {
-        let set = sets[i]
-        await timeout(100);
-        console.log(`Reading and writing set: ${set.name}`)
-        var cards = await getSetCards(set.id);
-        writeFileSync(`sets/${set.name}-${set.id}.json`, JSON.stringify(cards));
-    }
+    // for (var i = 0; i < sets.length; i++) {
+    //     let set = sets[i]
+    //     await timeout(100);
+    //     console.log(`Reading and writing set: ${set.name}`)
+    //     var cards = await getSetCards(set.id);
+    //     writeFileSync(`sets/${set.name}-${set.id}.json`, JSON.stringify(cards));
+    // }
 }
 const timeout = (ms: number) => {
     return new Promise(resolve => setTimeout(resolve, ms));
