@@ -1,5 +1,5 @@
 import axios from "axios";
-import { writeFile, writeFileSync } from "fs";
+import { existsSync, mkdir, mkdirSync, writeFile, writeFileSync } from "fs";
 import { PokemonSet } from "./model/model";
 
 // Not sure why this is needed, has something to do with the .env not being in the same folder as app.ts
@@ -13,7 +13,7 @@ interface ApiResponse<T> {
 const getAllSets = async (): Promise<PokemonSet[]> => {
 
     const res = await doAxiosRequest<ApiResponse<PokemonSet[]>>(
-        "https://api.pokemontcg.io/v2/sets222"
+        "https://api.pokemontcg.io/v2/sets"
     )
     return res.data;
 }
@@ -29,39 +29,39 @@ const doAxiosRequest = async <T,>(url: string): Promise<T> => {
     catch (error) {
         // We simply log an error and FAIL
         console.log(Object.keys(error), error.message);
-        throw new Error("Error doing request");
+        throw new Error(`Error doing request: ${url}`);
     }
 }
 const getSetCards = async (setId: string): Promise<any> => {
     let pokemon = [];
-    const { data } = await axios.get<ApiResponse<any>>(`https://api.pokemontcg.io/v2/cards?q=set.id:${setId}&page=1&pageSize=250&orderBy=number`, {
-        headers: {
-            "X-Api-Key": userDefinedEnvs.API_KEY
-        }
-    });
-    pokemon = pokemon.concat(data.data);
-    if (data.totalCount > 250) {
-        const { data } = await axios.get<ApiResponse<any>>(`https://api.pokemontcg.io/v2/cards?q=set.id:${setId}&page=2&pageSize=250&orderBy=number`, {
-            headers: {
-                "X-Api-Key": userDefinedEnvs.API_KEY
-            }
-        });
-        pokemon = pokemon.concat(data.data);
 
+    let res = await doAxiosRequest<ApiResponse<any>>(`https://api.pokemontcg.io/v2/cards?q=set.id:${setId}&page=1&pageSize=250&orderBy=number`);
+
+    pokemon = pokemon.concat(res.data);
+
+    if (res.totalCount > 250) {
+        let res = await doAxiosRequest<ApiResponse<any>>(`https://api.pokemontcg.io/v2/cards?q=set.id:${setId}&page=2&pageSize=250&orderBy=number`);
+        pokemon = pokemon.concat(res.data);
     }
     return pokemon;
+}
+const ensureFolderExist = (folder: string) => {
+    if (!existsSync(folder)) {
+        mkdirSync(folder);
+    }
 }
 const main = async () => {
     const sets = await getAllSets();
     writeFile("sets.json", JSON.stringify(sets), (x => x));
-    return;
-    // for (var i = 0; i < sets.length; i++) {
-    //     let set = sets[i]
-    //     await timeout(100);
-    //     console.log(`Reading and writing set: ${set.name}`)
-    //     var cards = await getSetCards(set.id);
-    //     writeFileSync(`sets/${set.name}-${set.id}.json`, JSON.stringify(cards));
-    // }
+
+    for (var i = 0; i < 2; i++) {
+        let set = sets[i]
+        await timeout(100);
+        console.log(`Reading and writing set: ${set.name}`)
+        var cards = await getSetCards(set.id);
+        ensureFolderExist("sets");
+        writeFileSync(`sets/${set.name}-${set.id}.json`, JSON.stringify(cards));
+    }
 }
 const timeout = (ms: number) => {
     return new Promise(resolve => setTimeout(resolve, ms));
