@@ -76,13 +76,13 @@ const writeCardData = async (path: string, data: any): Promise<void> => {
 const getFormattedDateString = () => {
     let currentData = new Date(Date.now()).toJSON();
     // For some reason we need evil regex here.
-    currentData = currentData.replace(/:\./g, "-");
+    currentData = currentData.replace(/[:\.]/g, "-");
     return currentData;
 }
 const main = async () => {
     if (userDefinedEnvs.DONT_RUN_EXPORT !== "true") {
         const sets = await getAllSets();
-        const allSetCards = await getAllCardData(sets);
+        const allSetCards = await getAllCardData(sets.slice(0,1));
         await writeAllCardData(allSetCards);
     }
     else {
