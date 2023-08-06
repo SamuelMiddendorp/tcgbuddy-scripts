@@ -37,7 +37,8 @@ const doAxiosRequest = async <T,>(url: string): Promise<T> => {
 const getSetCards = async (setId: string, delay: number): Promise<any> => {
     let pokemon = [];
     // Add delay else 404's will come back because to many request (I assume)
-    await timeout(delay * 50);
+    // 100 seems to be most consistent
+    await timeout(delay * 100);
     console.log(`Getting cards for set: ${setId}`);
     let res = await doAxiosRequest<ApiResponse<any>>(`https://api.pokemontcg.io/v2/cards?q=set.id:${setId}&page=1&pageSize=250&orderBy=number`);
     pokemon = pokemon.concat(res.data);
@@ -54,17 +55,28 @@ const ensureFolderExist = (folder: string) => {
     }
 }
 
-const getAndWriteAllCardData = async (sets: PokemonSet[]) => {
-    // Use plain old for loop to handle awaits correctly
+const getAllCardData = async (sets: PokemonSet[]) : Promise<any[]>=> {
+    // Use promise all with delay i 
     let data = await Promise.all(sets.map((s,i) => getSetCards(s.id, i)))
-
-    data.forEach(x => {
-
-    })
+    return data;
+}
+const writeAllCardData = async (allCardData: any[]) => {
+    let targetFolder = `sets-${getFormattedDateString()}`;
+    console.log(`Trying to write to folder: ${targetFolder}`)
+    ensureFolderExist(targetFolder);
+}
+const getFormattedDateString = () => {
+    let currentData = new Date(Date.now()).toJSON();
+    // For some reason we need evil regex here.
+    currentData = currentData.replace(/:/g, "-");
+    currentData = currentData.replace(".", "-");
+    return currentData;
 }
 const main = async () => {
     const sets = await getAllSets();
-    await getAndWriteAllCardData(sets);
+    const allSetCards = await getAllCardData(sets.slice(0,1));
+    await writeAllCardData(allSetCards);
+
 }
 
 const timeout = (ms: number) => {
