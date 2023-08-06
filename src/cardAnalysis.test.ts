@@ -1,9 +1,9 @@
-import { sum } from "./cardAnalysis";
+import { analyse } from "./cardAnalysis";
 
 
 
 
-test('adds 1 + 2 to equal 3', () => {
-  expect(sum(1, 2)).toBe(3);
+test('Analyses simple card', () => {
+  expect(analyse({text: "Foobar"})).toEqual(["DeckSearch"])
 });
 

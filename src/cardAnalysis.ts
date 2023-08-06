@@ -1,6 +1,6 @@
+import { Analysable, Card } from "./model/model";
 
-
-
-export const sum = (a: number, b: number) => {
-    return a + b;
+export const analyse = (card: Analysable) : string[] => {
+    return ["DeckSearch"];
 }
+

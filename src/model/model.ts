@@ -29,3 +29,6 @@ export interface PokemonSet{
   name: string,
   total: number
 }
+export interface Analysable{
+  text: string,
+}
