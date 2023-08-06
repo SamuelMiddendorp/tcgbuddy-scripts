@@ -1,5 +1,6 @@
 import axios from "axios";
-import { existsSync, mkdir, mkdirSync, writeFile, writeFileSync } from "fs";
+import { time } from "console";
+import { existsSync, mkdirSync, writeFileSync } from "fs";
 import { PokemonSet } from "./model/model";
 
 // Not sure why this is needed, has something to do with the .env not being in the same folder as app.ts
@@ -13,7 +14,7 @@ interface ApiResponse<T> {
 const getAllSets = async (): Promise<PokemonSet[]> => {
 
     const res = await doAxiosRequest<ApiResponse<PokemonSet[]>>(
-        "https://api.pokemontcg.io/v2/sets"
+        "https://api.pokemontcg.io/v2/sets?orderBy=releaseDate"
     )
     return res.data;
 }
@@ -27,19 +28,21 @@ const doAxiosRequest = async <T,>(url: string): Promise<T> => {
         return res.data;
     }
     catch (error) {
+
         // We simply log an error and FAIL
-        console.log(Object.keys(error), error.message);
+        console.log(error);
         throw new Error(`Error doing request: ${url}`);
     }
 }
-const getSetCards = async (setId: string): Promise<any> => {
+const getSetCards = async (setId: string, delay: number): Promise<any> => {
     let pokemon = [];
-
+    // Add delay else 404's will come back because to many request (I assume)
+    await timeout(delay * 50);
+    console.log(`Getting cards for set: ${setId}`);
     let res = await doAxiosRequest<ApiResponse<any>>(`https://api.pokemontcg.io/v2/cards?q=set.id:${setId}&page=1&pageSize=250&orderBy=number`);
-
     pokemon = pokemon.concat(res.data);
-
     if (res.totalCount > 250) {
+        console.log("Encountered set bigger than 250 cards");
         let res = await doAxiosRequest<ApiResponse<any>>(`https://api.pokemontcg.io/v2/cards?q=set.id:${setId}&page=2&pageSize=250&orderBy=number`);
         pokemon = pokemon.concat(res.data);
     }
@@ -50,19 +53,20 @@ const ensureFolderExist = (folder: string) => {
         mkdirSync(folder);
     }
 }
+
+const getAndWriteAllCardData = async (sets: PokemonSet[]) => {
+    // Use plain old for loop to handle awaits correctly
+    let data = await Promise.all(sets.map((s,i) => getSetCards(s.id, i)))
+
+    data.forEach(x => {
+
+    })
+}
 const main = async () => {
     const sets = await getAllSets();
-    writeFile("sets.json", JSON.stringify(sets), (x => x));
-
-    for (var i = 0; i < 2; i++) {
-        let set = sets[i]
-        await timeout(100);
-        console.log(`Reading and writing set: ${set.name}`)
-        var cards = await getSetCards(set.id);
-        ensureFolderExist("sets");
-        writeFileSync(`sets/${set.name}-${set.id}.json`, JSON.stringify(cards));
-    }
+    await getAndWriteAllCardData(sets);
 }
+
 const timeout = (ms: number) => {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
