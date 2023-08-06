@@ -1,6 +1,7 @@
 import axios from "axios";
 import { time } from "console";
-import { existsSync, mkdirSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, writeFile, writeFileSync } from "fs";
+import { promiseHooks } from "v8";
 import { PokemonSet } from "./model/model";
 
 // Not sure why this is needed, has something to do with the .env not being in the same folder as app.ts
@@ -64,6 +65,13 @@ const writeAllCardData = async (allCardData: any[]) => {
     let targetFolder = `sets-${getFormattedDateString()}`;
     console.log(`Trying to write to folder: ${targetFolder}`)
     ensureFolderExist(targetFolder);
+    await Promise.all(allCardData.map(data => {
+        // Use set object in card data to define url
+        writeCardData(`${targetFolder + "/" + data[0].set.id + ".json"}`, data)
+    }))
+}
+const writeCardData = async (path: string, data: any) : Promise<void> => {
+    writeFile(path, JSON.stringify(data), (x => console.log(`Succesfully wrote ${path} with ${data.length} pokemon`)));
 }
 const getFormattedDateString = () => {
     let currentData = new Date(Date.now()).toJSON();
