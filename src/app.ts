@@ -66,7 +66,7 @@ const writeAllCardData = async (allCardData: any[]) => {
     console.log(`Trying to write to folder: ${targetFolder}`)
     ensureFolderExist(targetFolder);
     await Promise.all(allCardData.map(data => {
-        // Use set object in card data to define url
+        // Use set object in card data to define file path
         writeCardData(`${targetFolder + "/" + data[0].set.id + ".json"}`, data)
     }))
 }
@@ -76,12 +76,11 @@ const writeCardData = async (path: string, data: any): Promise<void> => {
 const getFormattedDateString = () => {
     let currentData = new Date(Date.now()).toJSON();
     // For some reason we need evil regex here.
-    currentData = currentData.replace(/:/g, "-");
-    currentData = currentData.replace(".", "-");
+    currentData = currentData.replace(/:\./g, "-");
     return currentData;
 }
 const main = async () => {
-    if (userDefinedEnvs.RUN_EXPORT === "true") {
+    if (userDefinedEnvs.DONT_RUN_EXPORT !== "true") {
         const sets = await getAllSets();
         const allSetCards = await getAllCardData(sets);
         await writeAllCardData(allSetCards);
