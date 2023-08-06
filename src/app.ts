@@ -1,7 +1,5 @@
 import axios from "axios";
-import { time } from "console";
-import { existsSync, mkdirSync, writeFile, writeFileSync } from "fs";
-import { promiseHooks } from "v8";
+import { existsSync, mkdirSync, writeFile} from "fs";
 import { PokemonSet } from "./model/model";
 
 // Not sure why this is needed, has something to do with the .env not being in the same folder as app.ts
