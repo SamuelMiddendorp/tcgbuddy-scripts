@@ -56,9 +56,9 @@ const ensureFolderExist = (folder: string) => {
     }
 }
 
-const getAllCardData = async (sets: PokemonSet[]) : Promise<any[]>=> {
+const getAllCardData = async (sets: PokemonSet[]): Promise<any[]> => {
     // Use promise all with delay i 
-    let data = await Promise.all(sets.map((s,i) => getSetCards(s.id, i)))
+    let data = await Promise.all(sets.map((s, i) => getSetCards(s.id, i)))
     return data;
 }
 const writeAllCardData = async (allCardData: any[]) => {
@@ -70,7 +70,7 @@ const writeAllCardData = async (allCardData: any[]) => {
         writeCardData(`${targetFolder + "/" + data[0].set.id + ".json"}`, data)
     }))
 }
-const writeCardData = async (path: string, data: any) : Promise<void> => {
+const writeCardData = async (path: string, data: any): Promise<void> => {
     writeFile(path, JSON.stringify(data), (x => console.log(`Succesfully wrote ${path} with ${data.length} pokemon`)));
 }
 const getFormattedDateString = () => {
@@ -81,10 +81,14 @@ const getFormattedDateString = () => {
     return currentData;
 }
 const main = async () => {
-    const sets = await getAllSets();
-    const allSetCards = await getAllCardData(sets.slice(0,1));
-    await writeAllCardData(allSetCards);
-
+    if (userDefinedEnvs.RUN_EXPORT === "true") {
+        const sets = await getAllSets();
+        const allSetCards = await getAllCardData(sets);
+        await writeAllCardData(allSetCards);
+    }
+    else {
+        console.log("Not running export");
+    }
 }
 
 const timeout = (ms: number) => {
