@@ -41,3 +41,7 @@ const readJson = async <T,>(path: string) : Promise<T> => {
         let data = await fs.readFile(path);
         return JSON.parse(data.toString());
 } 
+
+const enhance = <T,>(obj: T, operation: (obj:T) => T) : T =>  {
+    return operation(obj);
+} 
