@@ -1,5 +1,6 @@
 import axios from "axios";
-import { ensureFolderExist, getFormattedDateString, log, timeout, writeData } from "./lib/utils";
+import { transform } from "./cardAnalysis/cardAnalysis";
+import { ensureFolderExist, getCurrentlyAvailableData, getFormattedDateString, log, timeout, writeData } from "./lib/utils";
 import { PokemonSet, ApiResponse } from "./model/model";
 
 // Not sure why this is needed, has something to do with the .env not being in the same folder as app.ts
@@ -60,10 +61,14 @@ const writeAllCardData = async (allCardData: any[]) => {
 const main = async () => {
     if (userDefinedEnvs.DONT_RUN_EXPORT === "true") {
         log("Not running export");
+        let cards = await getCurrentlyAvailableData();
+        cards.forEach(x => {
+            log(transform(x[0]))
+        })
     }
     else {
         const sets = await getAllSets();
-        const allSetCards = await getAllCardData(sets.slice(0, 1));
+        const allSetCards = await getAllCardData(sets.slice(0, 10));
         await writeAllCardData(allSetCards);
     }
 }
