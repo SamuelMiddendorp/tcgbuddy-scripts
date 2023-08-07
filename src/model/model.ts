@@ -24,6 +24,11 @@ export interface Images {
 }
 
 
+export interface ApiResponse<T> {
+    data: T,
+    totalCount: number,
+}
+
 export interface PokemonSet{
   id: string,
   name: string,

@@ -1,14 +1,10 @@
 import axios from "axios";
-import { existsSync, mkdirSync, writeFile} from "fs";
-import { PokemonSet } from "./model/model";
+import { ensureFolderExist, getFormattedDateString, log, timeout, writeData } from "./lib/utils";
+import { PokemonSet, ApiResponse } from "./model/model";
 
 // Not sure why this is needed, has something to do with the .env not being in the same folder as app.ts
 let userDefinedEnvs = require('dotenv').config().parsed;
 
-interface ApiResponse<T> {
-    data: T,
-    totalCount: number,
-}
 
 const getAllSets = async (): Promise<PokemonSet[]> => {
 
@@ -38,20 +34,15 @@ const getSetCards = async (setId: string, delay: number): Promise<any> => {
     // Add delay else 404's will come back because to many request (I assume)
     // 100 seems to be most consistent
     await timeout(delay * 100);
-    console.log(`Getting cards for set: ${setId}`);
+    log(`Getting cards for set: ${setId}`);
     let res = await doAxiosRequest<ApiResponse<any>>(`https://api.pokemontcg.io/v2/cards?q=set.id:${setId}&page=1&pageSize=250&orderBy=number`);
     pokemon = pokemon.concat(res.data);
     if (res.totalCount > 250) {
-        console.log("Encountered set bigger than 250 cards");
+        log("Encountered set bigger than 250 cards");
         let res = await doAxiosRequest<ApiResponse<any>>(`https://api.pokemontcg.io/v2/cards?q=set.id:${setId}&page=2&pageSize=250&orderBy=number`);
         pokemon = pokemon.concat(res.data);
     }
     return pokemon;
-}
-const ensureFolderExist = (folder: string) => {
-    if (!existsSync(folder)) {
-        mkdirSync(folder);
-    }
 }
 
 const getAllCardData = async (sets: PokemonSet[]): Promise<any[]> => {
@@ -59,23 +50,15 @@ const getAllCardData = async (sets: PokemonSet[]): Promise<any[]> => {
     let data = await Promise.all(sets.map((s, i) => getSetCards(s.id, i)))
     return data;
 }
+
 const writeAllCardData = async (allCardData: any[]) => {
     let targetFolder = `sets-${getFormattedDateString()}`;
-    console.log(`Trying to write to folder: ${targetFolder}`)
+    log(`Trying to write to folder: ${targetFolder}`)
     ensureFolderExist(targetFolder);
     await Promise.all(allCardData.map(data => {
         // Use set object in card data to define file path
-        writeCardData(`${targetFolder + "/" + data[0].set.id + ".json"}`, data)
+        writeData(`${targetFolder + "/" + data[0].set.id + ".json"}`, data)
     }))
-}
-const writeCardData = async (path: string, data: any): Promise<void> => {
-    writeFile(path, JSON.stringify(data), (x => console.log(`Succesfully wrote ${path} with ${data.length} pokemon`)));
-}
-const getFormattedDateString = () => {
-    let currentData = new Date(Date.now()).toJSON();
-    // For some reason we need evil regex here.
-    currentData = currentData.replace(/[:\.]/g, "-");
-    return currentData;
 }
 const main = async () => {
     if (userDefinedEnvs.DONT_RUN_EXPORT !== "true") {
@@ -84,18 +67,9 @@ const main = async () => {
         await writeAllCardData(allSetCards);
     }
     else {
-        console.log("Not running export");
+        log("Not running export");
     }
 }
 
-const timeout = (ms: number) => {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 main();
-
-
-
-
-
-
