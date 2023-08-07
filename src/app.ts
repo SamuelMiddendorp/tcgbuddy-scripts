@@ -7,7 +7,6 @@ let userDefinedEnvs = require('dotenv').config().parsed;
 
 
 const getAllSets = async (): Promise<PokemonSet[]> => {
-
     const res = await doAxiosRequest<ApiResponse<PokemonSet[]>>(
         "https://api.pokemontcg.io/v2/sets?orderBy=releaseDate"
     )
@@ -23,7 +22,6 @@ const doAxiosRequest = async <T,>(url: string): Promise<T> => {
         return res.data;
     }
     catch (error) {
-
         // We simply log an error and FAIL
         console.log(error);
         throw new Error(`Error doing request: ${url}`);
@@ -32,7 +30,6 @@ const doAxiosRequest = async <T,>(url: string): Promise<T> => {
 const getSetCards = async (setId: string, delay: number): Promise<any> => {
     let pokemon = [];
     // Add delay else 404's will come back because to many request (I assume)
-    // 100 seems to be most consistent
     await timeout(delay * 100);
     log(`Getting cards for set: ${setId}`);
     let res = await doAxiosRequest<ApiResponse<any>>(`https://api.pokemontcg.io/v2/cards?q=set.id:${setId}&page=1&pageSize=250&orderBy=number`);
@@ -61,13 +58,13 @@ const writeAllCardData = async (allCardData: any[]) => {
     }))
 }
 const main = async () => {
-    if (userDefinedEnvs.DONT_RUN_EXPORT !== "true") {
-        const sets = await getAllSets();
-        const allSetCards = await getAllCardData(sets.slice(0,1));
-        await writeAllCardData(allSetCards);
+    if (userDefinedEnvs.DONT_RUN_EXPORT === "true") {
+        log("Not running export");
     }
     else {
-        log("Not running export");
+        const sets = await getAllSets();
+        const allSetCards = await getAllCardData(sets.slice(0, 1));
+        await writeAllCardData(allSetCards);
     }
 }
 
