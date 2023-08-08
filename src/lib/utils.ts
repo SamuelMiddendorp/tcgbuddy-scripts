@@ -24,7 +24,7 @@ export const timeout = (ms: number) => {
 }
 export const log = (text: any) => {
     let currentFunction = (new Error().stack.split("at ")[2]);
-    console.log(`DEBUG->${getFormattedDateString()}-*  ${text}  *-(${currentFunction})`);
+    console.log(`DEBUG->${getFormattedDateString()}-*  ${JSON.stringify(text)}  *-(${currentFunction})`);
 }
 
 export const getCurrentlyAvailableData = async () : Promise<any[]> => {
@@ -42,6 +42,6 @@ const readJson = async <T,>(path: string) : Promise<T> => {
         return JSON.parse(data.toString());
 } 
 
-const enhance = <T,>(obj: T, operation: (obj:T) => T) : T =>  {
+export const enhance = <T,>(obj: T, operation: (obj:T) => T) : T =>  {
     return operation(obj);
 } 
