@@ -2,6 +2,7 @@ import axios from "axios";
 import { transform } from "./cardAnalysis/cardAnalysis";
 import { enhance, ensureFolderExist, getCurrentlyAvailableData, getFormattedDateString, log, timeout, writeData } from "./lib/utils";
 import { PokemonSet, ApiResponse } from "./model/model";
+import { writeCurrentlyAvailableCardsToDb } from "./mongo";
 
 // Not sure why this is needed, has something to do with the .env not being in the same folder as app.ts
 let userDefinedEnvs = require('dotenv').config().parsed;
@@ -71,10 +72,13 @@ const main = async () => {
     }
     else {
         const sets = await getAllSets();
-        const allSetCards = await getAllCardData(sets.slice(0, 10));
+        const allSetCards = await getAllCardData(sets);
         await writeAllCardData(allSetCards);
+        await writeCurrentlyAvailableCardsToDb();
     }
 }
 
 
 main();
+
+

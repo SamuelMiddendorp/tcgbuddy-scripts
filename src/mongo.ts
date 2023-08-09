@@ -5,16 +5,16 @@ let url = "mongodb://127.0.0.1:27017/TCGBUDDY"
 let mongoClient = new MongoClient(url);
 let db = mongoClient.db();
 
-let collection = db.collection("Cards22")
-const logConnection = async () => {
+let collection = db.collection("Cards33")
+export const writeCurrentlyAvailableCardsToDb = async () => {
     const cards = await getCurrentlyAvailableData();
-    console.log(cards.length);
-    console.log(cards[0].length)
-    await collection.insertMany(cards[0].map(x => enhance(x, (y => {
-        y._id = y.id;
-        return y;
-    }))));
+    for (var i = 0; i < cards.length; i++) {
+        let set = cards[i];
+        await collection.insertMany(set.map(x => enhance(x, (y => {
+            y._id = y.id;
+            return y;
+        }))));
+    }
 }
-logConnection().then(x => console.log("Succes!"))
 
 
