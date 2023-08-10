@@ -1,6 +1,7 @@
 import axios from "axios";
-import { transform } from "./cardAnalysis/cardAnalysis";
-import { enhance, ensureFolderExist, getCurrentlyAvailableData, getFormattedDateString, log, timeout, writeData } from "./lib/utils";
+import { fstat, readFileSync, writeFileSync } from "fs";
+import { createBaseVersionsOfCards } from "./cardAnalysis/cardAnalysis";
+import { ensureFolderExist, getCurrentlyAvailableData, getFormattedDateString, log, timeout, writeData } from "./lib/utils";
 import { PokemonSet, ApiResponse } from "./model/model";
 import { writeCurrentlyAvailableCardsToDb } from "./mongo";
 
@@ -63,12 +64,9 @@ const main = async () => {
     if (userDefinedEnvs.DONT_RUN_EXPORT === "true") {
         log("Not running export");
         let cards = await getCurrentlyAvailableData();
-        cards.forEach(x => {
-            log(enhance(x[0], (x => {
-                x.extra = transform(x);
-            return x}
-                )))
-        })
+        log(`Got ${cards.length}sets`);
+        let trainerMaps = createBaseVersionsOfCards(cards);
+        writeFileSync("out.json", JSON.stringify(trainerMaps));
     }
     else {
         const sets = await getAllSets();
