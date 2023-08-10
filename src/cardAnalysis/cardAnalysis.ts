@@ -1,6 +1,5 @@
-import { createHash } from "crypto";
-import { log } from "../lib/utils";
-import { Analysable, Card } from "../model/model";
+import { hashCard, log } from "../lib/utils";
+import { Analysable } from "../model/model";
 
 
 
@@ -29,18 +28,14 @@ export const createBaseVersionsOfCards = (cards: any[]) => {
     let map: BaseCardVariationMap = {}
     cards.forEach(set => {
         set.forEach(card => {
-            if (card.supertype != "Trainer"){
-                // Early return on non trainers
-                return
-            }
-            let hash = createHash("sha256");
-            let cardTextHash = hash.update(JSON.stringify(card.rules)).digest("base64");
-            if(cardTextHash in map){
-                map[cardTextHash] = [...map[cardTextHash], createCardInfoLight(card)];
+
+            let hash = hashCard({name: card.name, attacks: card.attacks ?? [], rules: card.rules ?? []}); 
+            if(hash in map){
+                map[hash] = [...map[hash], createCardInfoLight(card)];
             }
             else{
                 log(`Found new card to add to map ${card.name}`)
-                map[cardTextHash] = [createCardInfoLight(card)];
+                map[hash] = [createCardInfoLight(card)];
             }
         })
 
