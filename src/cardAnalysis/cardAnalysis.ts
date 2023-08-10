@@ -23,18 +23,16 @@ interface CardInfo{
 interface BaseCardVariationMap {
     [key: string]: any[];
 }
-
 export const createBaseVersionsOfCards = (cards: any[]) => {
     let map: BaseCardVariationMap = {}
+    let total = 0;
     cards.forEach(set => {
         set.forEach(card => {
-
             let hash = hashCard({name: card.name, attacks: card.attacks ?? [], rules: card.rules ?? []}); 
             if(hash in map){
                 map[hash] = [...map[hash], createCardInfoLight(card)];
             }
             else{
-                log(`Found new card to add to map ${card.name}`)
                 map[hash] = [createCardInfoLight(card)];
             }
         })
@@ -43,10 +41,23 @@ export const createBaseVersionsOfCards = (cards: any[]) => {
     return map;
 }
 export const createCardInfoLight = (card: any) : any => {
-    return{
+    try{
+        let cardLight = {
         name: card.name,
         id: card.id,
-        artist: card.artist
+        artist: card.artist,
+        cost: card.tcgplayer.prices.normal.low
+    }
+    return cardLight
+    }
+    catch{
+        let cardLight = {
+        name: card.name,
+        id: card.id,
+        artist: card.artist,
+        cost: 0.0
+    }
+    return cardLight
     }
 }
 
