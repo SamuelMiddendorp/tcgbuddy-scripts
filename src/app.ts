@@ -1,5 +1,5 @@
 import axios from "axios";
-import { fstat, readFileSync, writeFileSync } from "fs";
+import { writeFileSync } from "fs";
 import { createBaseVersionsOfCards } from "./cardAnalysis/cardAnalysis";
 import { ensureFolderExist, getCurrentlyAvailableData, getFormattedDateString, log, timeout, writeData } from "./lib/utils";
 import { PokemonSet, ApiResponse } from "./model/model";
@@ -7,7 +7,6 @@ import { writeCurrentlyAvailableCardsToDb } from "./mongo";
 
 // Not sure why this is needed, has something to do with the .env not being in the same folder as app.ts
 let userDefinedEnvs = require('dotenv').config().parsed;
-
 
 const getAllSets = async (): Promise<PokemonSet[]> => {
     const res = await doAxiosRequest<ApiResponse<PokemonSet[]>>(
@@ -60,21 +59,31 @@ const writeAllCardData = async (allCardData: any[]) => {
         writeData(`${targetFolder + "/" + data[0].set.id + ".json"}`, data)
     }))
 }
+const actionMap = {export : () => runExport(),
+                   analysis: () => runAnalysis()}
+
 const main = async () => {
-    if (userDefinedEnvs.DONT_RUN_EXPORT === "true") {
-        log("Not running export");
-        let cards = await getCurrentlyAvailableData();
-        log(`Got ${cards.length}sets`);
-        let trainerMaps = createBaseVersionsOfCards(cards);
-        writeFileSync("out.json", JSON.stringify(trainerMaps));
-    }
-    else {
-        const sets = await getAllSets();
-        const allSetCards = await getAllCardData(sets);
-        await writeAllCardData(allSetCards);
-        await writeCurrentlyAvailableCardsToDb();
+    let args = parseArgs();
+    for(var i = 0; i < args.length; i++){
+        await actionMap[args[i]]();
     }
 }
+const parseArgs = (): string[] => {
+    return process.argv.slice(2);
+}
+const runAnalysis = async () => {
+    let cards = await getCurrentlyAvailableData();
+    let cardMaps = createBaseVersionsOfCards(cards);
+    writeFileSync("out.json", JSON.stringify(cardMaps));
+}
+const runExport = async () => {
+    const sets = await getAllSets();
+    const allSetCards = await getAllCardData(sets);
+    await writeAllCardData(allSetCards);
+    await writeCurrentlyAvailableCardsToDb();
+}
+
+
 
 
 main();

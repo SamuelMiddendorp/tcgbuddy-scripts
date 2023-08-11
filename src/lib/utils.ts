@@ -35,6 +35,7 @@ export const getCurrentlyAvailableData = async () : Promise<any[]> => {
     let setFolder = folders.find(x => x.startsWith("sets"));
     let currentPath = rootDir + "/" + setFolder;
     let setPaths = readdirSync(currentPath);
+    log(`Found ${setPaths.length} sets`);
     let res = await Promise.all(setPaths.map(sp => readJson(currentPath + "/" + sp)));
     return res;
 }
