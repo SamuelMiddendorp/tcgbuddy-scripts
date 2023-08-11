@@ -65,8 +65,8 @@ const actionMap = {export : () => runExport(),
 const main = async () => {
     let args = parseArgs();
     for(var i = 0; i < args.length; i++){
+        // Actionmap, bit
         let action = actionMap[args[i]]; 
-
         if(action === undefined){
             log(`Cant run program: ${args[i]}`);
         }
@@ -75,14 +75,17 @@ const main = async () => {
         }
     }
 }
+
 const parseArgs = (): string[] => {
     return process.argv.slice(2);
 }
+
 const runAnalysis = async () => {
     let cards = await getCurrentlyAvailableData();
     let cardMaps = createBaseVersionsOfCards(cards);
     writeFileSync("out.json", JSON.stringify(cardMaps));
 }
+
 const runExport = async () => {
     const sets = await getAllSets();
     const allSetCards = await getAllCardData(sets);

@@ -25,10 +25,9 @@ interface BaseCardVariationMap {
 }
 export const createBaseVersionsOfCards = (cards: any[]) => {
     let map: BaseCardVariationMap = {}
-    let total = 0;
     cards.forEach(set => {
         set.forEach(card => {
-            let hash = hashCard({name: card.name, attacks: card.attacks ?? [], rules: card.rules ?? []}); 
+            let hash = hashCard({name: removeReduntantName(card.name), attacks: card.attacks ?? [], rules: card.rules ?? []}); 
             if(hash in map){
                 map[hash] = [...map[hash], createCardInfoLight(card)];
             }
@@ -39,6 +38,10 @@ export const createBaseVersionsOfCards = (cards: any[]) => {
 
     })
     return map;
+}
+export const removeReduntantName = (cardName: string) : string => {
+    return cardName.replace(/\s\(.*\)/g, "") 
+
 }
 export const createCardInfoLight = (card: any) : any => {
     try{
