@@ -54,11 +54,16 @@ interface BaseCardVariationMap {
     [key: string]: any[];
 }
 
+const hashExemptionsOnErrataCards = {
+    "Great Ball": (card: any): string => { return hashCard({ name: card.name }) },
+    "Ultra Ball": (card: any): string => { return hashCard({ name: card.name }) }
+}
+
 export const createBaseVersionsOfCards = (cards: any[]) => {
     let map: BaseCardVariationMap = {}
     cards.forEach(set => {
         set.forEach(card => {
-            let hash = hashCard({ name: removeReduntantName(card.name), attacks: card.attacks ?? [], rules: card.rules ?? [] });
+            let hash = computeCorrectHash(card);
             if (hash in map) {
                 map[hash] = [...map[hash], createCardInfoLight(card)];
             }
@@ -70,19 +75,26 @@ export const createBaseVersionsOfCards = (cards: any[]) => {
     })
     return map;
 }
+const computeCorrectHash = (card: any) : string => {
+    if (card.name in hashExemptionsOnErrataCards)
+    {
+        return hashExemptionsOnErrataCards[removeReduntantName(card.name)](card)
+    }
+    return hashCard({ name: removeReduntantName(card.name), attacks: card.attacks ?? [], rules: card.rules ?? [] })
+}
 export const createMinimalCardWithReferencesAndWrite = (cards: any, map: any) => {
     let sets = [];
     cards.forEach(set => {
         let setToWrite = [];
         set.forEach(card => {
-            let hash = hashCard({ name: removeReduntantName(card.name), attacks: card.attacks ?? [], rules: card.rules ?? [] });
+            let hash = computeCorrectHash(card);
             let cardWithReferences = {
                 id: card.id,
                 name: card.name,
                 image: card.images.small,
-                rarity: card.rarity,    
+                rarity: card.rarity,
                 releaseDate: card.set.releaseDate,
-                references: map[hash].filter(x => x.id != card.id).sort((a,b) => a.releaseDate > b.releaseDate ? 1 : -1)
+                references: map[hash].filter(x => x.id != card.id).sort((a, b) => a.releaseDate > b.releaseDate ? 1 : -1)
             }
             setToWrite = [...setToWrite, cardWithReferences];
         })
