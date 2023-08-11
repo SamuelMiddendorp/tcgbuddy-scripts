@@ -45,9 +45,6 @@ const readJson = async <T,>(path: string) : Promise<T> => {
 } 
 
 export const hashCard = (t: any) => {
-    if (t === undefined){
-        return createHash("sha256").update("{}").digest("hex");
-    }
     return createHash("sha256").update(JSON.stringify(t)).digest("hex");
 }
 export const enhance = <T,>(obj: T, operation: (obj:T) => T) : T =>  {

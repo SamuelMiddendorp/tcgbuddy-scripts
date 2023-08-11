@@ -3,35 +3,66 @@ import { Analysable } from "../model/model";
 
 
 
-
-export const analyse = (card: Analysable) : string[] => {
+const rarityDescending = ["Amazing Rare",
+    "Classic Collection",
+    "Double Rare",
+    "Hyper Rare",
+    "Illustration Rare",
+    "LEGEND",
+    "Promo",
+    "Radiant Rare",
+    "Rare",
+    "Rare ACE",
+    "Rare BREAK",
+    "Rare Holo",
+    "Rare Holo EX",
+    "Rare Holo GX",
+    "Rare Holo LV.X",
+    "Rare Holo Star",
+    "Rare Holo V",
+    "Rare Holo VMAX",
+    "Rare Holo VSTAR",
+    "Rare Prime",
+    "Rare Prism Star",
+    "Rare Rainbow",
+    "Rare Secret",
+    "Rare Shining",
+    "Rare Shiny",
+    "Rare Shiny GX",
+    "Rare Ultra",
+    "Special Illustration Rare",
+    "Trainer Gallery Rare Holo",
+    "Ultra Rare",
+    "Rare",
+    "Uncommon",
+    "Common",
+]
+export const analyse = (card: Analysable): string[] => {
     return ["DeckSearch"];
 }
 
 
 
-export const transform = (card: any) : string[] => {
+export const transform = (card: any): string[] => {
     let result = card.rules ?? [];
     result = result.concat(card.abilities ? card.abilities.map(x => x.text) : [])
-    result = result.concat(card.attacks ? card.attacks.map(x => x.text): [])
+    result = result.concat(card.attacks ? card.attacks.map(x => x.text) : [])
     return result;
 }
-interface CardInfo{
-    name: string,
-    hash: string,
-}
+
 interface BaseCardVariationMap {
     [key: string]: any[];
 }
+
 export const createBaseVersionsOfCards = (cards: any[]) => {
     let map: BaseCardVariationMap = {}
     cards.forEach(set => {
         set.forEach(card => {
-            let hash = hashCard({name: removeReduntantName(card.name), attacks: card.attacks ?? [], rules: card.rules ?? []}); 
-            if(hash in map){
+            let hash = hashCard({ name: removeReduntantName(card.name), attacks: card.attacks ?? [], rules: card.rules ?? [] });
+            if (hash in map) {
                 map[hash] = [...map[hash], createCardInfoLight(card)];
             }
-            else{
+            else {
                 map[hash] = [createCardInfoLight(card)];
             }
         })
@@ -39,29 +70,40 @@ export const createBaseVersionsOfCards = (cards: any[]) => {
     })
     return map;
 }
-export const removeReduntantName = (cardName: string) : string => {
-    return cardName.replace(/\s\(.*\)/g, "") 
-
+export const createMinimalCardWithReferencesAndWrite = (cards: any, map: any) => {
+    let sets = [];
+    cards.forEach(set => {
+        let setToWrite = [];
+        set.forEach(card => {
+            let hash = hashCard({ name: removeReduntantName(card.name), attacks: card.attacks ?? [], rules: card.rules ?? [] });
+            let cardWithReferences = {
+                id: card.id,
+                name: card.name,
+                image: card.images.small,
+                rarity: card.rarity,    
+                releaseDate: card.set.releaseDate,
+                references: map[hash].filter(x => x.id != card.id).sort((a,b) => a.releaseDate > b.releaseDate ? 1 : -1)
+            }
+            setToWrite = [...setToWrite, cardWithReferences];
+        })
+        sets = [...sets, setToWrite];
+    })
+    return sets;
 }
-export const createCardInfoLight = (card: any) : any => {
-    try{
-        let cardLight = {
-        name: card.name,
+
+export const removeReduntantName = (cardName: string): string => {
+    return cardName.replace(/\s\(.*\)/g, "")
+}
+
+export const createCardInfoLight = (card: any): any => {
+    let cardLight = {
         id: card.id,
-        artist: card.artist,
-        cost: card.tcgplayer.prices.normal.low
+        name: card.name,
+        rarity: card.rarity,
+        releaseDate: card.set.releaseDate,
+        image: card.images.small,
     }
     return cardLight
-    }
-    catch{
-        let cardLight = {
-        name: card.name,
-        id: card.id,
-        artist: card.artist,
-        cost: 0.0
-    }
-    return cardLight
-    }
 }
 
 

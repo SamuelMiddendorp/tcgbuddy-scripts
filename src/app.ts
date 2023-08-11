@@ -1,9 +1,9 @@
 import axios from "axios";
 import { writeFileSync } from "fs";
-import { createBaseVersionsOfCards } from "./cardAnalysis/cardAnalysis";
+import { createBaseVersionsOfCards, createMinimalCardWithReferencesAndWrite } from "./cardAnalysis/cardAnalysis";
 import { ensureFolderExist, getCurrentlyAvailableData, getFormattedDateString, log, timeout, writeData } from "./lib/utils";
 import { PokemonSet, ApiResponse } from "./model/model";
-import { writeCurrentlyAvailableCardsToDb } from "./mongo";
+import { writeCardsToDb, writeCurrentlyAvailableCardsToDb } from "./mongo";
 
 // Not sure why this is needed, has something to do with the .env not being in the same folder as app.ts
 let userDefinedEnvs = require('dotenv').config().parsed;
@@ -83,7 +83,8 @@ const parseArgs = (): string[] => {
 const runAnalysis = async () => {
     let cards = await getCurrentlyAvailableData();
     let cardMaps = createBaseVersionsOfCards(cards);
-    writeFileSync("out.json", JSON.stringify(cardMaps));
+    let cardsWithReferences = createMinimalCardWithReferencesAndWrite(cards, cardMaps);
+    await writeCardsToDb(cardsWithReferences);
 }
 
 const runExport = async () => {
