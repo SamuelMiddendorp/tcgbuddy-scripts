@@ -1,7 +1,7 @@
 import axios from "axios";
 import { writeFileSync } from "fs";
 import { createBaseVersionsOfCards, createMinimalCardWithReferencesAndWrite, doAllCardAnalysis } from "./cardAnalysis/cardAnalysis";
-import { ensureFolderExist, getCurrentlyAvailableData, getFormattedDateString, log, timeout, writeData } from "./lib/utils";
+import { ensureFolderExist, getCurrentlyAvailableData, getFormattedDateString, hashCard, log, timeout, writeData } from "./lib/utils";
 import { PokemonSet, ApiResponse } from "./model/model";
 import { writeCardsToDb, writeCurrentlyAvailableCardsToDb } from "./mongo";
 
@@ -95,15 +95,15 @@ const runErrataAnalysis = async () => {
             return state;
         }
         if(card.name in state){
-            if(state[card.name].includes(card.rules)){
+            if(state[card.name].map(x => hashCard(x.rules)).includes(hashCard(card.rules))){
                 return state;
             }
             else{
-                state[card.name] = [...state[card.name], card.rules];
+                state[card.name] = [...state[card.name], {id: card.id, image: card.images.small, rules: card.rules}];
             }
         }
         else{
-            state[card.name] = [card.rules];
+            state[card.name] = [{id: card.id, image: card.images.small, rules: card.rules}];
         }
         return state;
     }) 
