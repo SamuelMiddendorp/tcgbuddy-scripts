@@ -90,13 +90,29 @@ const runAnalysis = async () => {
 
 const runErrataAnalysis = async () => {
     let sets = await getCurrentlyAvailableData();
-    let state = doAllCardAnalysis(sets, () => {return {"bar": []}}, (card, state) => {
-        if(card.name == "Professor Juniper"){
-            state["bar"] = [...state["bar"], {image: card.images.small}];
+    let state = doAllCardAnalysis(sets, () => {return {}}, (card, state) => {
+        if(card.supertype != "Trainer"){
+            return state;
+        }
+        if(card.name in state){
+            if(state[card.name].includes(card.rules)){
+                return state;
+            }
+            else{
+                state[card.name] = [...state[card.name], card.rules];
+            }
+        }
+        else{
+            state[card.name] = [card.rules];
         }
         return state;
     }) 
-    log(state);
+    let resultsToWrite = [];
+    for(var key in state){
+        resultsToWrite = [...resultsToWrite, {name: key, variations: state[key], count: state[key].length}]
+    }
+    await writeCardsToDb([resultsToWrite]);
+
 }
 
 const runExport = async () => {
