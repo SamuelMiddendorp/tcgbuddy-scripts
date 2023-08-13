@@ -54,6 +54,17 @@ interface BaseCardVariationMap {
     [key: string]: any[];
 }
 
+export const doAllCardAnalysis = (sets: any[], initState: () => object = () => {return {}}, stateOperation: (card: any, state: object) => object) => {
+    let state = {};
+    state = initState();
+    sets.forEach(set => {
+        set.forEach(card => {
+            state = stateOperation(card, state);
+        })
+    });
+    return state;
+}
+
 const hashExemptionsOnErrataCards = {
     "Great Ball": (card: any): string => { return hashCard({ name: card.name }) },
     "Ultra Ball": (card: any): string => { return hashCard({ name: card.name }) }
@@ -75,9 +86,8 @@ export const createBaseVersionsOfCards = (cards: any[]) => {
     })
     return map;
 }
-const computeCorrectHash = (card: any) : string => {
-    if (card.name in hashExemptionsOnErrataCards)
-    {
+const computeCorrectHash = (card: any): string => {
+    if (card.name in hashExemptionsOnErrataCards) {
         return hashExemptionsOnErrataCards[removeReduntantName(card.name)](card)
     }
     return hashCard({ name: removeReduntantName(card.name), attacks: card.attacks ?? [], rules: card.rules ?? [] })

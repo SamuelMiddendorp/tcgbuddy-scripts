@@ -1,6 +1,6 @@
 import axios from "axios";
 import { writeFileSync } from "fs";
-import { createBaseVersionsOfCards, createMinimalCardWithReferencesAndWrite } from "./cardAnalysis/cardAnalysis";
+import { createBaseVersionsOfCards, createMinimalCardWithReferencesAndWrite, doAllCardAnalysis } from "./cardAnalysis/cardAnalysis";
 import { ensureFolderExist, getCurrentlyAvailableData, getFormattedDateString, log, timeout, writeData } from "./lib/utils";
 import { PokemonSet, ApiResponse } from "./model/model";
 import { writeCardsToDb, writeCurrentlyAvailableCardsToDb } from "./mongo";
@@ -60,6 +60,7 @@ const writeAllCardData = async (allCardData: any[]) => {
     }))
 }
 const actionMap = {export : () => runExport(),
+                   errataAnalysis : () => runErrataAnalysis(),
                    analysis: () => runAnalysis()}
 
 const main = async () => {
@@ -87,15 +88,23 @@ const runAnalysis = async () => {
     await writeCardsToDb(cardsWithReferences);
 }
 
+const runErrataAnalysis = async () => {
+    let sets = await getCurrentlyAvailableData();
+    let state = doAllCardAnalysis(sets, () => {return {"bar": []}}, (card, state) => {
+        if(card.name == "Professor Juniper"){
+            state["bar"] = [...state["bar"], {image: card.images.small}];
+        }
+        return state;
+    }) 
+    log(state);
+}
+
 const runExport = async () => {
     const sets = await getAllSets();
     const allSetCards = await getAllCardData(sets);
     await writeAllCardData(allSetCards);
     await writeCurrentlyAvailableCardsToDb();
 }
-
-
-
 
 main();
 
