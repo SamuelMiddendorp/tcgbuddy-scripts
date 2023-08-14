@@ -114,7 +114,7 @@ export const createMinimalCardWithReferencesAndWrite = (cards: any, map: any) =>
 }
 
 export const removeReduntantName = (cardName: string): string => {
-    return cardName.replace(/\s\(.*\)/g, "")
+    return cardName.replace(/\s?\(.*\)/g, "")
 }
 
 export const createCardInfoLight = (card: any): any => {
