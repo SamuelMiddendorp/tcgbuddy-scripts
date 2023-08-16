@@ -61,7 +61,8 @@ const writeAllCardData = async (allCardData: any[]) => {
 }
 const actionMap = {export : () => runExport(),
                    errataAnalysis : () => runErrataAnalysis(),
-                   analysis: () => runAnalysis()}
+                   analysis: () => runAnalysis(),
+                   tg: () => runCombineTgSets()}
 
 const main = async () => {
     let args = parseArgs();
@@ -113,6 +114,26 @@ const runErrataAnalysis = async () => {
     }
     await writeCardsToDb([resultsToWrite]);
 
+}
+const runCombineTgSets = async () => {
+    let sets = await getAllSets();
+    let children = []
+    let combinedSets = []
+    sets.forEach(set => {
+        if(children.find(x => x == set.id) != undefined){
+            return;
+        }
+
+        let tg = sets.find(x => x.id.includes(set.id) && x.id.length == set.id.length + 2);
+        if(tg != undefined){
+            children = [...children, tg.id]
+            combinedSets = [...combinedSets, {set: set.name, child: tg.name}]
+        }
+        else{
+            combinedSets = [...combinedSets, {set: set.name}]
+        }
+    })
+    console.log(JSON.stringify(combinedSets));
 }
 
 const runExport = async () => {
